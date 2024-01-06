@@ -1,6 +1,6 @@
 import 'package:cstore_flutter/screens/accounts/login.dart';
 import 'package:cstore_flutter/screens/customer/customers_list.dart';
-import 'package:cstore_flutter/screens/inventory/product_list.dart';
+import 'package:cstore_flutter/screens/inventory/animal_list.dart';
 
 import 'package:cstore_flutter/screens/main/main_screen.dart';
 import 'package:cstore_flutter/screens/pos/pos.dart';
@@ -48,7 +48,7 @@ class SideMenu extends StatelessWidget {
             svgSrc: "assets/icons/menu_task.svg",
             press: () {
               Navigator.of(context, rootNavigator: true).push(
-                MaterialPageRoute(builder: (context) => ProductListScreen(companyName: "Your Company Name")),
+                MaterialPageRoute(builder: (context) => AnimalListScreen()),
               );
 
             },
@@ -70,7 +70,7 @@ class SideMenu extends StatelessWidget {
             svgSrc: "assets/icons/menu_store.svg",
             press: () {
               Navigator.of(context, rootNavigator: true).push(
-                MaterialPageRoute(builder: (context) => LoginScreen()),
+                MaterialPageRoute(builder: (context) => LoginPage()),
               );
 
             },

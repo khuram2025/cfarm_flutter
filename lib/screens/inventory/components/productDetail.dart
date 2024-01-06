@@ -1,11 +1,14 @@
-import 'package:cstore_flutter/screens/inventory/product_list.dart';
+import 'package:cstore_flutter/screens/inventory/animal_list.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Ensure you have added flutter_svg in your pubspec.yaml
+import 'package:flutter_svg/flutter_svg.dart';
 
-class ProductDetailScreen extends StatelessWidget {
-  final Product product;
+import '../../../api/models.dart'; // Ensure you have added flutter_svg in your pubspec.yaml
 
-  const ProductDetailScreen({Key? key, required this.product})
+class AnimalDetailScreen extends StatelessWidget {
+
+  final Animal animal;
+
+  const AnimalDetailScreen({Key? key, required this.animal})
       : super(key: key);
 
   @override
@@ -14,8 +17,7 @@ class ProductDetailScreen extends StatelessWidget {
     final String emailIcon = 'assets/icons/email.svg';
     final String smsIcon = 'assets/icons/sms.svg';
     final String callIcon = 'assets/icons/call.svg';
-    final String houseImagePath =
-        product.imageUrl; // Use your Product's image path
+    String imageUrl = animal.imagePath ?? 'default_image_url'; // Use your Product's image path
 
     return DefaultTabController(
       length: 6,
@@ -36,23 +38,20 @@ class ProductDetailScreen extends StatelessWidget {
 
 
           children: [
-            Image.network(
-              houseImagePath,
+            Image.asset(
+              imageUrl,
               width: MediaQuery.of(context).size.width,
               height: 250,
               fit: BoxFit.cover,
             ),
             SizedBox(height: 20),
             Text(
-              product.name,
+              animal.tag,
               style: Theme.of(context).textTheme.headline5?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
-            Text(
-              product.description,
-              style: Theme.of(context).textTheme.subtitle1,
-            ),
+            
             Divider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

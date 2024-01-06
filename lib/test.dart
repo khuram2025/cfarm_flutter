@@ -1,23 +1,25 @@
-class Product {
-  // ... other fields ...
-
-  final String? salePrice;
-  final String? purchasePrice;
-  final String? quantity;
-
-  // ... constructor ...
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json['id'],
-      name: json['name'],
-      imageUrl: json['image_url'] != null
-          ? 'http://app.channab.com' + json['image_url']
-          : 'assets/images/default_image.png',
-      salePrice: json['sale_price']?.toString(),
-      purchasePrice: json['purchase_price']?.toString(),
-      quantity: json['current_stock']?.toString(),
-      // ... other fields ...
-    );
-  }
-}
+Data received: {animals: [{id: 1, tag: CM101, dob: 2022-04-13, latest_weight: 650,
+animal_type: milking, status: active, sex: male, category_title: TestChange2, purchase_cost: 2323,
+image_url: /media/animals/gty_5VYoOI0.png}, {id: 12, tag: CF103, dob: 2023-05-01, latest_weight: 650,
+animal_type: milking, status: active, sex: female, category_title: TestChange2, purchase_cost: 0,
+image_url: /media/animals/temp.PNG}, {id: 13, tag: CM1103, dob: 2023-05-01, latest_weight: null,
+animal_type: preg_milking, status: active, sex: male, category_title: TestChange, purchase_cost:
+454534, image_url: /media/animals/BlackMarble_2016_1200m_africa_s_labeled.png}, {id: 14,
+tag: CM104, dob: 2023-05-01, latest_weight: null, animal_type: preg_milking,
+status: active, sex: male, category_title: TestChange, purchase_cost: 4, image_url: /media/animals/Untitled.png},
+{id: 15, tag: CM2103, dob: 2023-05-01, latest_weight: null, animal_type: other, status: active, sex: male,
+category_title: TestChange, purchase_cost: 0, image_url: /media/animals/image.jpg},
+{id: 16, tag: CF105, dob: 2023-05-01, latest_weight: null, animal_type: breeder,
+status: active, sex: female, category_title: TestChange, purchase_cost: 0,
+image_url: /media/animals/image_WvY3H6D_pAOtxUy_XlSIJSD_IqHwVYc_xhP6WZh_5AWRZya.jpg},
+{id: 17, tag: CM1105, dob: 2023-05-07, latest_weight: null, animal_type: pregnant, status: active, sex: male,
+category_title: TestChange, purchase_cost: 1, image_url: /media/animals/image_vwJU7Uj_Z8TW33b_TYEHVjE_tva2HaL_eKGWxuU_QZ8KcHQ.jpg},
+{id: 18, tag: CM3103, dob: 2023-05-01, latest_weight: null, animal_type: other, status: active, sex: male, category_title: TestChange,
+purchase_cost: 2, image_url: /media/animals/image_wMgkisS_j14xh8H_WUUpB1g_CF5J01b_CzeQDWl.jpg},
+{id: 19, tag: Tfg, dob: 2019-05-27, latest_weight: null, animal_type: other, status: active, sex: male, category_title: TestChange, purchase_cost: 4, image_url: /media/animals/image_cYpQmlR.jpg},
+{id: 20, tag: 23, dob: 2023-04-05, latest_weight: null, animal_type: dry, status: active, sex: male, category_title: TestChange, purchase_cost: 2, image_url: /media/animals/Untitled_btDlGms.png},
+{id: 21, tag: Cs102, dob: 2021-05-08, latest_weight: null, animal_type: other, status: active, sex: male, category_title: TestChange, purchase_cost: 0, image_url: /media/animals/image_fFueNO4.jpg},
+{id: 22, tag: 101, dob: 2023-05-17, latest_weight: null, animal_type: other, status: active, sex: male, category_title: TestChange2, purchase_cost: 544, image_url: /media/animals/image_tnceaBi.jpg},
+{id: 23, tag: Cs105, dob: 2023-05-01, latest_weight: null, animal_type: preg_milking, status: active, sex: female, category_title: TestChange, purchase_cost: 0, image_url: /media/animals/image_8ZVx03n.jpg},
+{id: 24, tag: ererer, dob: 2023-05-01, latest_weight: null, animal_type: dry, status: active, sex: male, category_title: TestChange, purchase_cost: null, image_url: null}, {id: 25, tag: Test2, dob: 2023-05-31,
+latest_weight: null, animal_type: calf, status: active, sex: male, category_title: TestChange, purchase_cost: 0, image_url: /media/animals/BF12.jpg}]}
