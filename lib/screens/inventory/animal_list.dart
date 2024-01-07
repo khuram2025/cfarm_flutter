@@ -19,6 +19,10 @@ class AnimalListScreen extends StatefulWidget {
 }
 class _AnimalListScreenState extends State<AnimalListScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<String> animalTypes = [];
+  String selectedType = 'All';
+  Map<String, int> animalTypeCounts = {};
+
 
   late ApiService apiService;
   List<Animal> animals = [];
@@ -30,9 +34,40 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
   @override
   void initState() {
     super.initState();
-    apiService = ApiService(); // Instantiate ApiService
-    _loadAnimals(); // Call _loadAnimals which uses ApiService
+    apiService = ApiService();
+    _loadAnimalTypes();
+    _loadAnimals();
   }
+  void _loadAnimalTypes() async {
+    try {
+      List<Map<String, dynamic>> fetchedTypesWithCounts = await apiService.fetchAnimalTypes();
+
+      // Clear previous data
+      animalTypeCounts.clear();
+
+      int totalCount = 0;
+
+      // Populate the animalTypeCounts map and calculate the total count
+      for (var typeInfo in fetchedTypesWithCounts) {
+        String type = typeInfo['animal_type'] ?? 'Unknown';
+        int count = typeInfo['count'] ?? 0;
+        animalTypeCounts[type] = count;
+        totalCount += count;
+      }
+
+      // Add the total count for 'All'
+      animalTypeCounts['All'] = totalCount;
+
+      // Update the animalTypes list
+      setState(() {
+        animalTypes = ['All', ...animalTypeCounts.keys.where((type) => type != 'All')];
+      });
+    } catch (e) {
+      print("Error fetching animal types: $e");
+    }
+  }
+
+
 
   void _loadAnimals() async {
     setState(() {
@@ -52,25 +87,69 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     }
   }
 
+  void _loadAnimalsByType(String type) async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      List<Animal> fetchedAnimals;
+      if (type == 'All') {
+        fetchedAnimals = await apiService.fetchAnimals(1);
+      } else {
+        fetchedAnimals = await apiService.fetchAnimalsByType(type);
+      }
+      setState(() {
+        animals = fetchedAnimals;
+      });
+    } catch (e) {
+      print("Error fetching animals by type: $e");
+      // Consider showing an error message to the user
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
 
-  Widget _buildAnimalTypeBox(String type) {
+
+
+  Widget _buildAnimalTypeBox(String type, int count) {
+    String displayText = '${capitalizeFirstLetter(type)} ($count)';
+
     return GestureDetector(
-
+      onTap: () {
+        setState(() {
+          selectedType = type;
+          if (type == 'All') {
+            _loadAnimals();
+          } else {
+            _loadAnimalsByType(type);
+          }
+        });
+      },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 4.0),
         padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.green),
           borderRadius: BorderRadius.circular(10.0),
+          color: selectedType == type ? Colors.green : Colors.transparent,
         ),
         child: Text(
-          type,
-          style: TextStyle(color: Colors.green),
+          displayText,
+          style: TextStyle(color: selectedType == type ? Colors.white : Colors.green),
         ),
       ),
     );
   }
+
+  String capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
+
 
 
   @override
@@ -121,7 +200,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-// TODO: Add your 'Add Category' logic here
+
                           },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
@@ -137,17 +216,19 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                     Row(
                       children: [
 
-
-
                         // Add Horizontal Scroll View
                         Expanded(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             padding: EdgeInsets.symmetric(horizontal: defaultPadding),
                             child: Row(
-                              children: animals.map((animal) => _buildAnimalInfoBox(animal)).toList(),
+                              children: animalTypes.map((type) => _buildAnimalTypeBox(
+                                  type,
+                                  animalTypeCounts[type] ?? 0 // Provide the count, default to 0 if not found
+                              )).toList(),
+                            )
 
-                            ),
+
                           ),
                         ),
                         SizedBox(width: defaultPadding),
@@ -181,14 +262,12 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                           child: Text("Add Product"),
                         ),
 
-
-
                       ],
                     ),
                     SizedBox(height: defaultPadding),
 
                     SizedBox(height: defaultPadding),
-                    AnimalListView(animals: animals), // Correctly placed within a Column
+                    AnimalListView( key: ValueKey(selectedType),animals: animals), // Correctly placed within a Column
                   ],
                 ),
               ),
@@ -207,33 +286,23 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
       ),
     );
   }
-  Widget _buildAnimalInfoBox(Animal animal) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.0),
-      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.green),
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Text(
-        animal.tag, // Example, showing the animal's tag
-        style: TextStyle(color: Colors.green),
-      ),
-    );
-  }
+
 
 
 }
 
 class AnimalListView extends StatefulWidget {
   final List<Animal> animals;
+  final Key key;
 
-  AnimalListView({Key? key, required this.animals}) : super(key: key);
+
+  AnimalListView({required this.key, required this.animals}) : super(key: key);
 
   @override
   _AnimalListViewState createState() => _AnimalListViewState();
 }
 class _AnimalListViewState extends State<AnimalListView> {
+
   late ApiService apiService;
   List<Animal> animals = [];
   bool isLoading = true;
@@ -271,9 +340,9 @@ class _AnimalListViewState extends State<AnimalListView> {
         : ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: animals.length,
+      itemCount: widget.animals.length,
       itemBuilder: (context, index) {
-        final animal = animals[index];
+        final animal = widget.animals[index];
         return InkWell(
           onTap: (){
             if (Responsive.isMobile(context)) {
