@@ -2,13 +2,14 @@ import 'package:cstore_flutter/responsive.dart';
 import 'package:cstore_flutter/screens/dashboard/components/header.dart';
 import 'package:cstore_flutter/screens/dashboard/components/storage_details.dart';
 import 'package:cstore_flutter/screens/inventory/components/AddNewProduct.dart';
-import 'package:cstore_flutter/screens/inventory/components/productDetail.dart';
+import 'package:cstore_flutter/screens/inventory/components/animalDetail.dart';
 import 'package:cstore_flutter/screens/main/components/side_menu.dart';
 
 import 'package:flutter/material.dart';
 import '../../../constants.dart';
 import '../../api/apiService.dart';
 import '../../api/models.dart';
+import 'components/animal_listScreen.dart';
 
 
 class AnimalListScreen extends StatefulWidget {
@@ -22,6 +23,8 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
   List<String> animalTypes = [];
   String selectedType = 'All';
   Map<String, int> animalTypeCounts = {};
+  Animal? selectedAnimal;
+
 
 
   late ApiService apiService;
@@ -77,6 +80,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
       List<Animal> fetchedAnimals = await apiService.fetchAnimals(1);
       setState(() {
         animals = fetchedAnimals;
+        selectedAnimal = animals.isNotEmpty ? animals.first : null;
       });
     } catch (e) {
       print("Error fetching animals: $e");
@@ -100,6 +104,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
       }
       setState(() {
         animals = fetchedAnimals;
+        selectedAnimal = animals.isNotEmpty ? animals.first : null;
       });
     } catch (e) {
       print("Error fetching animals by type: $e");
@@ -267,7 +272,16 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                     SizedBox(height: defaultPadding),
 
                     SizedBox(height: defaultPadding),
-                    AnimalListView( key: ValueKey(selectedType),animals: animals), // Correctly placed within a Column
+                    AnimalListView(
+                      key: ValueKey(selectedType),
+                      animals: animals,
+                      onAnimalTap: (Animal animal) {
+                        setState(() {
+                          selectedAnimal = animal;
+                        });
+                      },
+                    )
+// Correctly placed within a Column
                   ],
                 ),
               ),
@@ -277,176 +291,20 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
             // On Mobile means if the screen is less than 850 we don't want to show it
             if (!Responsive.isMobile(context))
               Expanded(
-                flex: 2,
+                flex: 3,
 
-                child: Text("Test")
+                child: selectedAnimal != null
+                    ? AnimalDetailScreen(animal: selectedAnimal!, milkingDataList: [
+                  // Populate this list with your milking data
+                  MilkingData(DateTime.now(), 5.0, 4.5, 6.0),
+                  // ... more data ...
+                ],)
+                    : Center(child: Text("No animal selected")),
               )
           ],
         ),
       ),
     );
   }
-
-
-
-}
-
-class AnimalListView extends StatefulWidget {
-  final List<Animal> animals;
-  final Key key;
-
-
-  AnimalListView({required this.key, required this.animals}) : super(key: key);
-
-  @override
-  _AnimalListViewState createState() => _AnimalListViewState();
-}
-class _AnimalListViewState extends State<AnimalListView> {
-
-  late ApiService apiService;
-  List<Animal> animals = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    apiService = ApiService();
-    _loadAnimals();
-  }
-
-  void _loadAnimals() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      List<Animal> fetchedAnimals = await apiService.fetchAnimals(1);
-      setState(() {
-        animals = fetchedAnimals;
-      });
-    } catch (e) {
-      print("Error fetching animals: $e");
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return animals.isEmpty
-        ? Text("No animals available")
-        : ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: widget.animals.length,
-      itemBuilder: (context, index) {
-        final animal = widget.animals[index];
-        return InkWell(
-          onTap: (){
-            if (Responsive.isMobile(context)) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AnimalDetailScreen(animal: animal)),
-              );
-            }
-          },
-          child: Card(
-            child: Container(
-              height: 140,
-              child: Row(
-                children: [
-                  // First Column: Animal Image
-                  Container(
-                    width: 120,
-                    height: 140,
-                    child: Image.network(
-                      animal.imagePath ?? 'default_image_url_here',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
-                    ),
-                  ),
-                  // Second Column: Animal Details
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // First Row: Tag, Edit, Delete Icons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                animal.tag,
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              Row(
-                                children: [
-                                  Icon(Icons.edit, color: Colors.green),
-                                  SizedBox(width: 8),
-                                  Icon(Icons.delete, color: Colors.red),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8), // Add vertical gap
-                          // Second Row: Weight
-                          Text('Weight: ${animal.latestWeight ?? 'N/A'} kg'),
-                          SizedBox(height: 8), // Add vertical gap
-                          // Third Row: Age
-                          Text('Age: ${calculateAge(animal.dob)}'),
-                          SizedBox(height: 8), // Add vertical gap
-                          // Fourth Row: Type, Sex, Category
-                          Row(
-                            children: [
-                              _buildDetailBox(capitalizeFirstLetter(animal.animalType)),
-                              _buildDetailBox(capitalizeFirstLetter(animal.sex)),
-                              _buildDetailBox(capitalizeFirstLetter(animal.categoryTitle)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  String capitalizeFirstLetter(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1);
-  }
-
-  String calculateAge(DateTime dob) {
-    DateTime today = DateTime.now();
-    int age = today.year - dob.year;
-    if (today.month < dob.month || (today.month == dob.month && today.day < dob.day)) {
-      age--;
-    }
-    return '$age years';
-  }
-
-  Widget _buildDetailBox(String text) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.0),
-      padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.green),
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(color: Colors.green),
-      ),
-    );
-  }
-
 }
 

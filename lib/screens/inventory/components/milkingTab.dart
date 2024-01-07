@@ -52,19 +52,81 @@ class _MilkingTableState extends State<MilkingTable> {
   }
 
   Widget _buildAddMilkAndFilterRow(BuildContext context) {
-    //... [Existing code]
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          OutlinedButton(
+            onPressed: () {
+              // TODO: Implement Add Milk functionality
+            },
+            style: OutlinedButton.styleFrom(
+              primary: Colors.green,
+              side: BorderSide(color: Colors.green),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text('Add Milk', style: TextStyle(color: Colors.green)),
+          ),
+          _buildFilterDropdown(),
+        ],
+      ),
+    );
   }
 
   Widget _buildFilterDropdown() {
-    //... [Existing code]
+    List<String> filterOptions = ['Last 7 Days', 'This Month', 'This Year', 'Custom Range'];
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.green),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: filterOptions[0], // Default to the first item
+          icon: Icon(Icons.arrow_drop_down, color: Colors.green),
+          items: filterOptions.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value, style: TextStyle(color: Colors.green, fontSize: 14)), // Reduced font size
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            // TODO: Implement filter functionality
+          },
+        ),
+      ),
+    );
   }
 
   Widget _buildTableHeader() {
-    //... [Existing code]
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: Row(
+        children: [
+          _buildHeaderItem("Date", flex: 2),
+          _buildHeaderItem("1st", flex: 1),
+          _buildHeaderItem("2nd", flex: 1),
+          _buildHeaderItem("3rd", flex: 1),
+          _buildHeaderItem("Total", flex: 1),
+        ],
+      ),
+    );
   }
 
   Widget _buildHeaderItem(String title, {int flex = 1}) {
-    //... [Existing code]
+    return Expanded(
+      flex: flex,
+      child: Text(
+        title,
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
   }
 
   Widget _buildMilkingTable(BuildContext context, List<MilkingData> data) {
@@ -88,4 +150,6 @@ class _MilkingTableState extends State<MilkingTable> {
       ),
     );
   }
+
+
 }

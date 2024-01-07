@@ -1,16 +1,18 @@
 import 'package:cstore_flutter/screens/inventory/animal_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
-import '../../../api/models.dart'; // Ensure you have added flutter_svg in your pubspec.yaml
+import '../../../api/models.dart';
+import 'milkingTab.dart'; // Ensure you have added flutter_svg in your pubspec.yaml
 
 class AnimalDetailScreen extends StatelessWidget {
 
   final Animal animal;
+  final List<MilkingData> milkingDataList;
 
-  const AnimalDetailScreen({Key? key, required this.animal})
+  AnimalDetailScreen({Key? key, required this.animal, required this.milkingDataList})
       : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     // Dummy data for icons, replace with your actual assets
@@ -18,6 +20,7 @@ class AnimalDetailScreen extends StatelessWidget {
     final String smsIcon = 'assets/icons/sms.svg';
     final String callIcon = 'assets/icons/call.svg';
     String imageUrl = animal.imagePath ?? 'default_image_url'; // Use your Product's image path
+
 
     return DefaultTabController(
       length: 6,
@@ -38,7 +41,7 @@ class AnimalDetailScreen extends StatelessWidget {
 
 
           children: [
-            Image.asset(
+            Image.network(
               imageUrl,
               width: MediaQuery.of(context).size.width,
               height: 250,
@@ -92,7 +95,7 @@ class AnimalDetailScreen extends StatelessWidget {
                     Tab(
                       icon: Icon(Icons.storage, size: 16),
                       // Example icon, replace with your own icon
-                      text: 'Stock Status',
+                      text: 'Milking Tab',
                     ),
                     Tab(
                       icon: Icon(Icons.attach_money, size: 16),
@@ -124,8 +127,8 @@ class AnimalDetailScreen extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  Center(child: Text('Overview Content')),
-                  Center(child: Text('Stock Status Content')),
+                  _buildSpecificationSection(context, animal),
+                MilkingTable(animalId: animal.id),
                   Center(child: Text('Sale Content')),
                   Center(child: Text('Purchase Content')),
                   Center(child: Text('Analytics Content')),
@@ -139,6 +142,84 @@ class AnimalDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+
+
+  Widget _buildSpecificationSection(BuildContext context, Animal animal) {
+    bool isLargeScreen = MediaQuery.of(context).size.width > 600;
+
+    Widget _buildSpecificationItem(String title, String data) {
+      return Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 1,
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueGrey,
+                  fontSize: isLargeScreen ? 16 : 14,
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Text(
+                data,
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: isLargeScreen ? 16 : 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSpecificationItem("Age", _calculateAge(animal.dob)),
+        _buildSpecificationItem("Weight", '${animal.latestWeight ?? 'N/A'} kg'),
+        _buildSpecificationItem("Type", animal.animalType),
+        _buildSpecificationItem("Price", '\$${animal.purchaseCost ?? 'N/A'}'),
+        _buildSpecificationItem("Sex", animal.sex),
+        _buildSpecificationItem("Status", animal.status),
+        // Add more specifications as needed
+      ],
+    );
+  }
+  String _calculateAge(DateTime dob) {
+    final now = DateTime.now();
+    int years = now.year - dob.year;
+    int months = now.month - dob.month;
+    int days = now.day - dob.day;
+
+    if (months < 0 || (months == 0 && days < 0)) {
+      years--;
+      months += 12;
+    }
+
+    if (days < 0) {
+      final lastMonth = DateTime(now.year, now.month, 0);
+      days += lastMonth.day;
+      months--;
+    }
+
+    String age = '';
+    if (years > 0) age += '$years Year${years > 1 ? 's' : ''} ';
+    if (months > 0) age += '$months Month${months > 1 ? 's' : ''} ';
+    if (days > 0) age += '$days Day${days > 1 ? 's' : ''}';
+
+    return age.trim();
+  }
+
+
+
 }
 
 class ActionButton extends StatelessWidget {

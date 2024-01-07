@@ -45,3 +45,32 @@ class Animal {
 }
 
 
+class MilkingData {
+  final DateTime date;
+  final double firstMilking;
+  final double secondMilking;
+  final double thirdMilking;
+
+  MilkingData(this.date, this.firstMilking, this.secondMilking, this.thirdMilking);
+
+  factory MilkingData.fromJson(Map<String, dynamic> json) {
+    double parseDouble(dynamic value) {
+      try {
+        return double.parse(value?.toString() ?? '0.0');
+      } catch (e) {
+        print("Error parsing double: $e");
+        return 0.0;
+      }
+    }
+
+    return MilkingData(
+      DateTime.parse(json['date']),
+      parseDouble(json['first_time']),
+      parseDouble(json['second_time']),
+      parseDouble(json['third_time']),
+    );
+  }
+
+
+  double get total => firstMilking + secondMilking + thirdMilking;
+}

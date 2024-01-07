@@ -44,7 +44,7 @@ class SideMenu extends StatelessWidget {
             },
           ),
           DrawerListTile(
-            title: "Products",
+            title: "Animals",
             svgSrc: "assets/icons/menu_task.svg",
             press: () {
               Navigator.of(context, rootNavigator: true).push(

@@ -93,6 +93,28 @@ class ApiService {
     }
   }
 
+  Future<List<MilkingData>> fetchMilkingData(int animalId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/dairy/api/milk_records/$animalId/'),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Token $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> milkRecordsJson = json.decode(response.body) as List;
+      return milkRecordsJson.map((json) => MilkingData.fromJson(json)).toList();
+    } else {
+      print('Failed to load milking data with status code: ${response.statusCode}');
+      throw Exception('Failed to load milking data with status code: ${response.statusCode}');
+    }
+  }
+
+
 
 
 
