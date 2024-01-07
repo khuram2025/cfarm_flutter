@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models.dart';
@@ -93,12 +94,21 @@ class ApiService {
     }
   }
 
-  Future<List<MilkingData>> fetchMilkingData(int animalId) async {
+  Future<List<MilkingData>> fetchMilkingData(int animalId, String filter, {DateTime? from, DateTime? to}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
+    String url;
+    if (filter == 'Custom Range' && from != null && to != null) {
+      String formattedFrom = DateFormat('yyyy-MM-dd').format(from);
+      String formattedTo = DateFormat('yyyy-MM-dd').format(to);
+      url = '$baseUrl/dairy/api/milk_records/$animalId/?from=$formattedFrom&to=$formattedTo';
+    } else {
+      url = '$baseUrl/dairy/api/milk_records/$animalId/?filter=$filter';
+    }
+
     final response = await http.get(
-      Uri.parse('$baseUrl/dairy/api/milk_records/$animalId/'),
+      Uri.parse(url),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Token $token",
@@ -113,8 +123,6 @@ class ApiService {
       throw Exception('Failed to load milking data with status code: ${response.statusCode}');
     }
   }
-
-
 
 
 

@@ -15,12 +15,66 @@ class MilkingTable extends StatefulWidget {
 
 class _MilkingTableState extends State<MilkingTable> {
   late Future<List<MilkingData>> milkingDataFuture;
+  String selectedFilter = 'This Month'; // New state for tracking selected filter
 
-  @override
   void initState() {
     super.initState();
-    milkingDataFuture = ApiService().fetchMilkingData(widget.animalId);
+    milkingDataFuture = ApiService().fetchMilkingData(
+        widget.animalId,
+        selectedFilter, // Pass the filter as a named parameter
+        from: customFromDate,
+        to: customToDate
+    );
   }
+
+
+  void updateFilter(String newFilter) async {
+    if (newFilter == 'Custom Range') {
+      await selectCustomDateRange(context);
+    }
+    setState(() {
+      selectedFilter = newFilter;
+      milkingDataFuture = ApiService().fetchMilkingData(
+          widget.animalId,
+          selectedFilter,
+          from: customFromDate,
+          to: customToDate
+      );
+    });
+  }
+
+
+  DateTime? customFromDate;
+  DateTime? customToDate;
+
+  Future<void> selectCustomDateRange(BuildContext context) async {
+    final DateTime? pickedFromDate = await showDatePicker(
+      context: context,
+      initialDate: customFromDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+
+    if (pickedFromDate != null) {
+      final DateTime? pickedToDate = await showDatePicker(
+        context: context,
+        initialDate: pickedFromDate,
+        firstDate: pickedFromDate,
+        lastDate: DateTime(2025),
+      );
+
+      if (pickedToDate != null) {
+        setState(() {
+          customFromDate = pickedFromDate;
+          customToDate = pickedToDate;
+          // Here, you would typically call an API or a method to fetch data for the selected range
+          // For example: fetchMilkingDataForRange(customFromDate, customToDate);
+        });
+      }
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +142,7 @@ class _MilkingTableState extends State<MilkingTable> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: filterOptions[0], // Default to the first item
+          value: selectedFilter, // Default to the first item
           icon: Icon(Icons.arrow_drop_down, color: Colors.green),
           items: filterOptions.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
@@ -97,8 +151,15 @@ class _MilkingTableState extends State<MilkingTable> {
             );
           }).toList(),
           onChanged: (String? newValue) {
-            // TODO: Implement filter functionality
+            if (newValue != null) {
+              if (newValue == 'Custom Range') {
+                selectCustomDateRange(context);
+              } else {
+                updateFilter(newValue);
+              }
+            }
           },
+
         ),
       ),
     );
