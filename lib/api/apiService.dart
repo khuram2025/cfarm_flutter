@@ -28,7 +28,7 @@ class ApiService {
   }
 
 
-  Future<AnimalResponse> fetchAnimals(int page) async {
+  Future<List<Animal>> fetchAnimals(int page) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
@@ -41,41 +41,18 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      var data = json.decode(response.body) as Map<String, dynamic>;
-      List<dynamic> animalsJson = data['animals'];
-      List<Animal> animals = animalsJson.map((json) => Animal.fromJson(json)).toList();
-      Map<String, String> animalTypes = Map<String, String>.from(data['animal_types']);
-
-      return AnimalResponse(animals: animals, animalTypes: animalTypes);
+      // Directly decode the response body as a list
+      List<dynamic> animalsJson = json.decode(response.body) as List;
+      // Map each item in the list to an Animal object
+      return animalsJson.map((json) => Animal.fromJson(json)).toList();
     } else {
       print('Failed to load animals with status code: ${response.statusCode}');
       throw Exception('Failed to load animals with status code: ${response.statusCode}');
     }
   }
 
-  Future<AnimalResponse> fetchAnimalsByType(String type) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-    final response = await http.get(
-      Uri.parse('$baseUrl/dairy/api/animals/?type=$type'), // Adjust API endpoint as needed
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Token $token",
-      },
-    );
 
-    if (response.statusCode == 200) {
-      var data = json.decode(response.body) as Map<String, dynamic>;
-      List<dynamic> animalsJson = data['animals'];
-      List<Animal> animals = animalsJson.map((json) => Animal.fromJson(json)).toList();
-      Map<String, String> animalTypes = Map<String, String>.from(data['animal_types']);
 
-      return AnimalResponse(animals: animals, animalTypes: animalTypes);
-    } else {
-      print('Failed to load animals with status code: ${response.statusCode}');
-      throw Exception('Failed to load animals with status code: ${response.statusCode}');
-    }
-  }
 
 
 }

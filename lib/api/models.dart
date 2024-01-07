@@ -25,25 +25,23 @@ class Animal {
 
   factory Animal.fromJson(Map<String, dynamic> json) {
     String baseUrl = 'http://farmapp.channab.com';
+    String imagePath = json['image'] as String? ?? '';
+    String fullImagePath = imagePath.isNotEmpty ? baseUrl + imagePath : 'default_image_url_here';
     return Animal(
-      id: json['id'],
-      tag: json['tag'],
-      dob: DateTime.parse(json['dob']),
+      id: json['id'] ?? 0,  // Assuming 0 as a default id, or handle appropriately
+      tag: json['tag'] ?? 'Unknown',  // Providing a default value if tag is null
+      dob: DateTime.parse(json['dob'] ?? '1900-01-01'),  // Default to a fallback date
       latestWeight: json['latest_weight'] != null ? double.tryParse(json['latest_weight'].toString()) : null,
-      animalType: json['animal_type'],
-      status: json['status'],
-      sex: json['sex'],
-      categoryTitle: json['category_title'],
+      animalType: json['animal_type'] ?? 'Unknown',  // Default type
+      status: json['status'] ?? 'Unknown',  // Default status
+      sex: json['sex'] ?? 'Unknown',  // Default sex
+      categoryTitle: json['category_title'] ?? 'Unknown',  // Default category title
       purchaseCost: json['purchase_cost'] != null ? double.tryParse(json['purchase_cost'].toString()) : null,
-      imagePath: json['image_url'] != null ? baseUrl + json['image_url'] : null,
+      imagePath: fullImagePath,
     );
   }
+
+
 }
 
 
-class AnimalResponse {
-  final List<Animal> animals;
-  final Map<String, String> animalTypes;
-
-  AnimalResponse({required this.animals, required this.animalTypes});
-}

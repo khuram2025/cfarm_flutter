@@ -12,36 +12,36 @@ import '../../api/models.dart';
 
 
 class AnimalListScreen extends StatefulWidget {
+  AnimalListScreen({super.key});
+
   @override
   State<AnimalListScreen> createState() => _AnimalListScreenState();
 }
 class _AnimalListScreenState extends State<AnimalListScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final List<String> animalTypes = ['Milking', 'Preg Milking', 'Dry', 'Breeder', 'Other'];
 
   late ApiService apiService;
-  late List<Animal> animals;
-  late Map<String, String> animalTypesMap;
+  List<Animal> animals = [];
+
+
   bool isLoading = false;
 
 
   @override
   void initState() {
     super.initState();
-    apiService = ApiService();
-    animalTypesMap = {}; // Initialize the map
-    _loadAnimals();
+    apiService = ApiService(); // Instantiate ApiService
+    _loadAnimals(); // Call _loadAnimals which uses ApiService
   }
 
-  _loadAnimals() async {
+  void _loadAnimals() async {
     setState(() {
       isLoading = true;
     });
     try {
-      AnimalResponse response = await apiService.fetchAnimals(1);
+      List<Animal> fetchedAnimals = await apiService.fetchAnimals(1);
       setState(() {
-        animals = response.animals;
-        animalTypesMap = response.animalTypes;
+        animals = fetchedAnimals;
       });
     } catch (e) {
       print("Error fetching animals: $e");
@@ -52,32 +52,11 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     }
   }
 
-  void _fetchAnimalsByType(String type) async {
-    print('Fetching animals of type: $type'); // Check if this gets printed when you click a type box
-
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      AnimalResponse response = await apiService.fetchAnimalsByType(type);
-      print('Animals fetched: ${response.animals}'); // Check the fetched data
-
-      setState(() {
-        animals = response.animals;
-      });
-    } catch (e) {
-      print("Error fetching animals: $e");
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
 
 
   Widget _buildAnimalTypeBox(String type) {
     return GestureDetector(
-      onTap: () => _fetchAnimalsByType(type),
+
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 4.0),
         padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
@@ -166,7 +145,8 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                             scrollDirection: Axis.horizontal,
                             padding: EdgeInsets.symmetric(horizontal: defaultPadding),
                             child: Row(
-                              children: animalTypesMap.keys.map((key) => _buildAnimalTypeBox(animalTypesMap[key] ?? key)).toList(),
+                              children: animals.map((animal) => _buildAnimalInfoBox(animal)).toList(),
+
                             ),
                           ),
                         ),
@@ -208,7 +188,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                     SizedBox(height: defaultPadding),
 
                     SizedBox(height: defaultPadding),
-                    AnimalListView(), // Correctly placed within a Column
+                    AnimalListView(animals: animals), // Correctly placed within a Column
                   ],
                 ),
               ),
@@ -227,10 +207,29 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
       ),
     );
   }
+  Widget _buildAnimalInfoBox(Animal animal) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.0),
+      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.green),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: Text(
+        animal.tag, // Example, showing the animal's tag
+        style: TextStyle(color: Colors.green),
+      ),
+    );
+  }
+
 
 }
 
 class AnimalListView extends StatefulWidget {
+  final List<Animal> animals;
+
+  AnimalListView({Key? key, required this.animals}) : super(key: key);
+
   @override
   _AnimalListViewState createState() => _AnimalListViewState();
 }
@@ -246,15 +245,14 @@ class _AnimalListViewState extends State<AnimalListView> {
     _loadAnimals();
   }
 
-  _loadAnimals() async {
+  void _loadAnimals() async {
     setState(() {
       isLoading = true;
     });
     try {
-      AnimalResponse response = await apiService.fetchAnimals(1);
+      List<Animal> fetchedAnimals = await apiService.fetchAnimals(1);
       setState(() {
-        animals = response.animals;
-
+        animals = fetchedAnimals;
       });
     } catch (e) {
       print("Error fetching animals: $e");
@@ -268,7 +266,9 @@ class _AnimalListViewState extends State<AnimalListView> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return animals.isEmpty
+        ? Text("No animals available")
+        : ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       itemCount: animals.length,
