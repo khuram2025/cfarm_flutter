@@ -19,7 +19,7 @@ class _MilkingTableState extends State<MilkingTable> {
   @override
   void initState() {
     super.initState();
-    milkingDataFuture = ApiService().fetchTotalMilkingData('today');
+    milkingDataFuture = ApiService().fetchTotalMilkingData('this_month');
   }
 
 
