@@ -48,31 +48,26 @@ class _MilkingTableState extends State<MilkingTable> {
   DateTime? customToDate;
 
   Future<void> selectCustomDateRange(BuildContext context) async {
-    final DateTime? pickedFromDate = await showDatePicker(
+    final DateTimeRange? pickedDateRange = await showDateRangePicker(
       context: context,
-      initialDate: customFromDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2025),
+      initialDateRange: customFromDate != null && customToDate != null
+          ? DateTimeRange(start: customFromDate!, end: customToDate!)
+          : null,
     );
 
-    if (pickedFromDate != null) {
-      final DateTime? pickedToDate = await showDatePicker(
-        context: context,
-        initialDate: pickedFromDate,
-        firstDate: pickedFromDate,
-        lastDate: DateTime(2025),
-      );
-
-      if (pickedToDate != null) {
-        setState(() {
-          customFromDate = pickedFromDate;
-          customToDate = pickedToDate;
-          // Here, you would typically call an API or a method to fetch data for the selected range
-          // For example: fetchMilkingDataForRange(customFromDate, customToDate);
-        });
-      }
+    if (pickedDateRange != null) {
+      setState(() {
+        customFromDate = pickedDateRange.start;
+        customToDate = pickedDateRange.end;
+        // Update the filter with a new value that represents the range
+        selectedFilter = "${DateFormat('yyyy-MM-dd').format(customFromDate!)} to ${DateFormat('yyyy-MM-dd').format(customToDate!)}";
+      });
+      updateFilter(selectedFilter); // Now this will pass the new date range to your API
     }
   }
+
 
 
 

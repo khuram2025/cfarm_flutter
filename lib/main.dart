@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/main/main_screen.dart';
 
 void main() {
+
   runApp(MyApp());
 }
 

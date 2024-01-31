@@ -124,8 +124,35 @@ class ApiService {
     }
   }
 
+  Future<List<MilkingRecord>> fetchTotalMilkingData(String filter, {DateTime? from, DateTime? to}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
 
+    String url;
+    if (filter == 'Custom Range' && from != null && to != null) {
+      String formattedFrom = DateFormat('yyyy-MM-dd').format(from);
+      String formattedTo = DateFormat('yyyy-MM-dd').format(to);
+      url = '$baseUrl/dairy/api/milk_records/?from=$formattedFrom&to=$formattedTo';
+    } else {
+      url = '$baseUrl/dairy/api/milk_records/?filter=$filter';
+    }
 
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Token $token",
+      },
+    );
 
+    if (response.statusCode == 200) {
+      var jsonResponse = json.decode(response.body);
+      List<dynamic> milkRecordsJson = jsonResponse['records'] as List;
+      return milkRecordsJson.map((json) => MilkingRecord.fromJson(json)).toList();
+    } else {
+      print('Failed to load milking data with status code: ${response.statusCode}');
+      throw Exception('Failed to load milking data');
+    }
+  }
 
 }

@@ -44,7 +44,6 @@ class Animal {
 
 }
 
-
 class MilkingData {
   final DateTime date;
   final double firstMilking;
@@ -74,3 +73,42 @@ class MilkingData {
 
   double get total => firstMilking + secondMilking + thirdMilking;
 }
+
+class MilkingRecord {
+  final DateTime date;
+  final double? firstTime;
+  final double? secondTime;
+  final double? thirdTime;
+  final double totalMilk;
+  final double? firstTimeDiff;
+  final double? secondTimeDiff;
+  final double? thirdTimeDiff;
+  final double? totalDiff;
+
+  MilkingRecord({
+    required this.date,
+    this.firstTime,
+    this.secondTime,
+    this.thirdTime,
+    required this.totalMilk,
+    this.firstTimeDiff,
+    this.secondTimeDiff,
+    this.thirdTimeDiff,
+    this.totalDiff,
+  });
+
+  factory MilkingRecord.fromJson(Map<String, dynamic> json) {
+    return MilkingRecord(
+      date: DateTime.parse(json['date']),
+      firstTime: json['total_first_time']?.toDouble(),
+      secondTime: json['total_second_time']?.toDouble(),
+      thirdTime: json['total_third_time']?.toDouble(),
+      totalMilk: json['total_milk']?.toDouble() ?? 0,
+      firstTimeDiff: json['first_time_diff']?.toDouble(),
+      secondTimeDiff: json['second_time_diff']?.toDouble(),
+      thirdTimeDiff: json['third_time_diff']?.toDouble(),
+      totalDiff: json['total_diff']?.toDouble(),
+    );
+  }
+}
+

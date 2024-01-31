@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../dashboard/dashboard_screen.dart';
+import '../../milkRecord/milkList.dart';
 import '../../transactions/transaction_screen.dart';
 
 class SideMenu extends StatelessWidget {
@@ -49,6 +50,17 @@ class SideMenu extends StatelessWidget {
             press: () {
               Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(builder: (context) => AnimalListScreen()),
+              );
+
+            },
+
+          ),
+          DrawerListTile(
+            title: "Milk Record",
+            svgSrc: "assets/icons/menu_tran.svg",
+            press: () {
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(builder: (context) => MilkingRecordScreen()),
               );
 
             },
