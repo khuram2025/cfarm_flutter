@@ -191,11 +191,60 @@ class _MilkingTableState extends State<MilkingTable> {
   }
 
   Widget _buildMilkingTable(BuildContext context, List<MilkingData> data) {
-    return ListView.builder(
-      itemCount: data.length,
-      itemBuilder: (context, index) => _buildTableRow(data[index]),
+    // Calculate the totals
+    double totalFirstMilking = 0;
+    double totalSecondMilking = 0;
+    double totalThirdMilking = 0;
+    double grandTotal = 0;
+
+    for (var milkingData in data) {
+      totalFirstMilking += milkingData.firstMilking ?? 0;
+      totalSecondMilking += milkingData.secondMilking ?? 0;
+      totalThirdMilking += milkingData.thirdMilking ?? 0;
+      grandTotal += milkingData.total;
+    }
+
+    return Stack(
+      children: [
+        Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (context, index) => _buildTableRow(data[index]),
+              ),
+            ),
+            SizedBox(height: 48), // Space for the total row
+          ],
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: _buildTotalRow(totalFirstMilking, totalSecondMilking, totalThirdMilking, grandTotal),
+        ),
+      ],
     );
   }
+
+  Widget _buildTotalRow(double totalFirst, double totalSecond, double totalThird, double grandTotal) {
+    // You can customize the style as needed
+    return Container(
+      color: Colors.grey[200], // Gives a distinct background color for the total row
+      padding: EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(flex: 2, child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(child: Text('${totalFirst.toStringAsFixed(2)} L', style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(child: Text('${totalSecond.toStringAsFixed(2)} L', style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(child: Text('${totalThird.toStringAsFixed(2)} L', style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(child: Text('${grandTotal.toStringAsFixed(2)} L', style: TextStyle(fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+  }
+
+
 
   Widget _buildTableRow(MilkingData data) {
     return Padding(
@@ -211,6 +260,4 @@ class _MilkingTableState extends State<MilkingTable> {
       ),
     );
   }
-
-
 }
