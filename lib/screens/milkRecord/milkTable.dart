@@ -6,8 +6,9 @@ import '../../api/models.dart';
 
 class MilkingTable extends StatefulWidget {
   final int animalId;
+  final String filter;
 
-  const MilkingTable({Key? key, required this.animalId}) : super(key: key);
+  const MilkingTable({Key? key, required this.animalId, required this.filter}) : super(key: key); // Modify this line
 
   @override
   _MilkingTableState createState() => _MilkingTableState();
@@ -19,7 +20,19 @@ class _MilkingTableState extends State<MilkingTable> {
   @override
   void initState() {
     super.initState();
-    milkingDataFuture = ApiService().fetchTotalMilkingData('this_month');
+    fetchData();
+  }
+
+  void fetchData() {
+    milkingDataFuture = ApiService().fetchTotalMilkingData(widget.filter); // Use the filter
+  }
+
+  @override
+  void didUpdateWidget(MilkingTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.filter != widget.filter) {
+      fetchData(); // Fetch data again if the filter changes
+    }
   }
 
 
