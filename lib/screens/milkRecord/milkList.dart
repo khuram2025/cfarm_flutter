@@ -26,6 +26,7 @@ class _MilkingRecordScreenState extends State<MilkingRecordScreen> {
             if (Responsive.isDesktop(context)) Expanded(child: SideMenu()),
             Expanded(
               flex: 5,
+
               child: SingleChildScrollView(
                 primary: false,
                 padding: EdgeInsets.all(defaultPadding),

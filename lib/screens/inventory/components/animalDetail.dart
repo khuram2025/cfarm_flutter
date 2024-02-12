@@ -71,6 +71,7 @@ class AnimalDetailScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10.0),
               ),
+              padding: EdgeInsets.zero,
               child: Align(
                 alignment: Alignment.centerLeft, // Align TabBar to the left
                 child: TabBar(
@@ -80,7 +81,7 @@ class AnimalDetailScreen extends StatelessWidget {
                   // Color for the indicator
                   indicatorSize: TabBarIndicatorSize.tab,
                   // Indicator size as per tab
-                  labelPadding: EdgeInsets.symmetric(horizontal: 12.0),
+                  labelPadding: EdgeInsets.only(left: 0, right: 12.0),
                   // Reduce left and right padding of each tab
                   tabs: [
                     Container(

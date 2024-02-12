@@ -100,10 +100,10 @@ class MilkingRecord {
   factory MilkingRecord.fromJson(Map<String, dynamic> json) {
     return MilkingRecord(
       date: DateTime.parse(json['date']),
-      firstTime: json['first_time_total'] != null ? double.tryParse(json['first_time_total'].toString()) : null,
-      secondTime: json['second_time_total'] != null ? double.tryParse(json['second_time_total'].toString()) : null,
-      thirdTime: json['third_time_total'] != null ? double.tryParse(json['third_time_total'].toString()) : null,
-      totalMilk: json['total_milk'] != null ? double.tryParse(json['total_milk'].toString()) ?? 0.0 : 0.0,
+        firstTime: json['first_time'] != null ? double.tryParse(json['first_time'].toString()) : null,
+        secondTime: json['second_time'] != null ? double.tryParse(json['second_time'].toString()) : null,
+        thirdTime: json['third_time'] != null ? double.tryParse(json['third_time'].toString()) : null,
+        totalMilk: json['total_milk'] != null ? double.tryParse(json['total_milk'].toString()) ?? 0.0 : 0.0,
       // Include the other fields if they exist in the JSON
       firstTimeDiff: json['first_time_diff'] != null ? double.tryParse(json['first_time_diff'].toString()) : null,
       secondTimeDiff: json['second_time_diff'] != null ? double.tryParse(json['second_time_diff'].toString()) : null,

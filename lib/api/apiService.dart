@@ -136,6 +136,7 @@ class ApiService {
     } else {
       url = '$baseUrl/dairy/api/milk_records/?filter=$filter';
     }
+    print("Request URL: $url");
 
     final response = await http.get(
       Uri.parse(url),
@@ -146,6 +147,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
+      print("Raw JSON response: ${response.body}");
       var jsonResponse = json.decode(response.body);
       List<dynamic> milkRecordsJson = jsonResponse['records'] as List;
       return milkRecordsJson.map((json) => MilkingRecord.fromJson(json)).toList();
