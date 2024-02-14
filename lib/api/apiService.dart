@@ -157,4 +157,69 @@ class ApiService {
     }
   }
 
+  Future<bool> createOrUpdateMilkRecord({
+    required DateTime date,
+    required int animalId,
+    double? firstTime,
+    double? secondTime,
+    double? thirdTime,
+  }) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    String url = '$baseUrl/dairy/api/milk_records/create/';
+
+    String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+    Map<String, dynamic> data = {
+      'date': formattedDate,
+      'animal': animalId,
+      'first_time': firstTime,
+      'second_time': secondTime,
+      'third_time': thirdTime,
+    };
+
+    // Log data being sent
+    print("Sending Milk Record Data:\n$data");
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Token $token",
+      },
+      body: json.encode(data),
+    );
+
+    if (response.statusCode == 201) {
+      print("Milk record created/updated successfully.");
+      return true;
+    } else {
+      // Log detailed error information
+      print('Failed to create/update milk record with status code: ${response.statusCode}');
+      print('Error Response: ${response.body}'); // Includes backend error messages
+      return false;
+    }
+  }
+
+
+  Future<List<Animal>> fetchMilkAnimals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final response = await http.get(
+      Uri.parse('$baseUrl/dairy/api/animals/filtered/'), // Corrected from '$_baseUrl' to '$baseUrl'
+      headers: {
+        'Authorization': 'Token $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> animalList = json.decode(response.body);
+      return animalList.map((data) => Animal.fromJson(data)).toList();
+    } else {
+      throw Exception('Failed to load animals');
+    }
+  }
+
+
 }

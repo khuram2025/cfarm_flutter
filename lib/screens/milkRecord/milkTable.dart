@@ -8,7 +8,8 @@ class MilkingTable extends StatefulWidget {
   final int animalId;
   final String filter;
 
-  const MilkingTable({Key? key, required this.animalId, required this.filter}) : super(key: key); // Modify this line
+  const MilkingTable({Key? key, required this.animalId, required this.filter})
+      : super(key: key);
 
   @override
   _MilkingTableState createState() => _MilkingTableState();
@@ -24,56 +25,95 @@ class _MilkingTableState extends State<MilkingTable> {
   }
 
   void fetchData() {
-    milkingDataFuture = ApiService().fetchTotalMilkingData(widget.filter); // Use the filter
+    milkingDataFuture = ApiService().fetchTotalMilkingData(widget.filter);
   }
 
   @override
   void didUpdateWidget(MilkingTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.filter != widget.filter) {
-      fetchData(); // Fetch data again if the filter changes
+      fetchData();
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<MilkingRecord>>(
-      future: milkingDataFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text("Error occurred: ${snapshot.error}"));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text("No milking data available."));
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Determine the scale factor for text and spacing based on screen width
+        final scale = constraints.maxWidth < 600 ? 0.8 : 1.0;
 
-        List<MilkingRecord> milkingRecords = snapshot.data!;
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columns: [
-              DataColumn(label: Text('Date')),
-              DataColumn(label: Text('1st Milking (L)')),
-              DataColumn(label: Text('2nd Milking (L)')),
-              DataColumn(label: Text('3rd Milking (L)')),
-              DataColumn(label: Text('Total Milk (L)')),
-            ],
-            rows: milkingRecords.map<DataRow>((record) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(DateFormat('yyyy-MM-dd').format(record.date))),
-                  DataCell(Text(record.firstTime?.toString() ?? 'N/A')),
-                  DataCell(Text(record.secondTime?.toString() ?? 'N/A')),
-                  DataCell(Text(record.thirdTime?.toString() ?? 'N/A')),
-                  DataCell(Text(record.totalMilk.toString())),
+        return FutureBuilder<List<MilkingRecord>>(
+          future: milkingDataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error occurred: ${snapshot.error}"));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text("No milking data available."));
+            }
 
-                ],
-              );
-            }).toList(),
-          ),
+            List<MilkingRecord> milkingRecords = snapshot.data!;
+            var totalDays = snapshot.data!.length;
+
+
+            double totalFirstTime = milkingRecords.fold(0, (previousValue, record) => previousValue + (record.firstTime ?? 0));
+            double totalSecondTime = milkingRecords.fold(0, (previousValue, record) => previousValue + (record.secondTime ?? 0));
+            double totalThirdTime = milkingRecords.fold(0, (previousValue, record) => previousValue + (record.thirdTime ?? 0));
+            double totalMilk = milkingRecords.fold(0, (previousValue, record) => previousValue + (record.totalMilk ?? 0));
+            var averageMilkPerDay = totalDays > 0 ? totalMilk / totalDays : 0;
+            return Column(
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 600), // Max table width
+                    child: DataTable(
+                      columnSpacing: 25 * scale, // Adjust column spacing
+                      dataRowHeight: 48 * scale, // Adjust row height
+                      headingRowHeight: 56 * scale, // Adjust heading row height
+                      dataTextStyle: TextStyle(fontSize: 14 * scale), // Adjust data text size
+                      headingTextStyle: TextStyle(fontSize: 16 * scale), // Adjust heading text size
+                      columns: [
+                        DataColumn(label: Text('Date')),
+                        DataColumn(label: Text('1st(Lit)')),
+                        DataColumn(label: Text('2nd(Lit)')),
+                        DataColumn(label: Text('3rd(Lit)')),
+                        DataColumn(label: Text('Total(Lit)')),
+                      ],
+                      rows: milkingRecords.map<DataRow>((record) {
+                        return DataRow(
+                          cells: [
+                            DataCell(Text(DateFormat('yyyy-MM-dd').format(record.date))),
+                            DataCell(Text(record.firstTime?.toString() ?? 'N/A')),
+                            DataCell(Text(record.secondTime?.toString() ?? 'N/A')),
+                            DataCell(Text(record.thirdTime?.toString() ?? 'N/A')),
+                            DataCell(Text(record.totalMilk.toString())),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  color: Colors.grey[200],
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+
+                      Expanded(child: Center(child: Text('Avg. ${averageMilkPerDay.toStringAsFixed(2)} L'))),
+                      Expanded(child: Center(child: Text('${totalFirstTime.toStringAsFixed(2)} L'))),
+                      Expanded(child: Center(child: Text('${totalSecondTime.toStringAsFixed(2)} L'))),
+                      Expanded(child: Center(child: Text('${totalThirdTime.toStringAsFixed(2)} L'))),
+                      Expanded(child: Center(child: Text('${totalMilk.toStringAsFixed(2)} L'))),
+                    ],
+                  ),
+                ),
+              ],
+            );
+
+          },
         );
       },
     );
