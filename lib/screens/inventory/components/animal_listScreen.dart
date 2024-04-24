@@ -120,13 +120,17 @@ class _AnimalListViewState extends State<AnimalListView> {
                           Text('Age: ${calculateAge(animal.dob)}'),
                           SizedBox(height: 8), // Add vertical gap
                           // Fourth Row: Type, Sex, Category
-                          Row(
-                            children: [
-                              _buildDetailBox(capitalizeFirstLetter(animal.animalType)),
-                              _buildDetailBox(capitalizeFirstLetter(animal.sex)),
-                              _buildDetailBox(capitalizeFirstLetter(animal.categoryTitle)),
-                            ],
-                          ),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,  // Enables horizontal scrolling
+                            child: Row(
+                              children: [
+                                _buildDetailBox(capitalizeFirstLetter(animal.animalType)),
+                                _buildDetailBox(capitalizeFirstLetter(animal.sex)),
+                                _buildDetailBox(capitalizeFirstLetter(animal.categoryTitle)),
+                              ],
+                            ),
+                          )
+
                         ],
                       ),
                     ),

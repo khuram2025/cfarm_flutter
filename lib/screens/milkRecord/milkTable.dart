@@ -63,12 +63,11 @@ class _MilkingTableState extends State<MilkingTable> {
             double totalThirdTime = milkingRecords.fold(0, (previousValue, record) => previousValue + (record.thirdTime ?? 0));
             double totalMilk = milkingRecords.fold(0, (previousValue, record) => previousValue + (record.totalMilk ?? 0));
             var averageMilkPerDay = totalDays > 0 ? totalMilk / totalDays : 0;
-            return Column(
-              children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 600), // Max table width
+            return Expanded(
+              child: Column(
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
                     child: DataTable(
                       columnSpacing: 25 * scale, // Adjust column spacing
                       dataRowHeight: 48 * scale, // Adjust row height
@@ -76,7 +75,12 @@ class _MilkingTableState extends State<MilkingTable> {
                       dataTextStyle: TextStyle(fontSize: 14 * scale), // Adjust data text size
                       headingTextStyle: TextStyle(fontSize: 16 * scale), // Adjust heading text size
                       columns: [
-                        DataColumn(label: Text('Date')),
+                        DataColumn(
+                          label: Flexible( // Use Flexible to allow the column to expand
+                            fit: FlexFit.tight, // Ensure the label takes up all available space
+                            child: Text('Date'),
+                          ),
+                        ),
                         DataColumn(label: Text('1st(Lit)')),
                         DataColumn(label: Text('2nd(Lit)')),
                         DataColumn(label: Text('3rd(Lit)')),
@@ -95,22 +99,22 @@ class _MilkingTableState extends State<MilkingTable> {
                       }).toList(),
                     ),
                   ),
-                ),
-                Container(
-                  color: Colors.grey[200],
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
+                  Container(
+                    color: Colors.grey[200],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
 
-                      Expanded(child: Center(child: Text('Avg. ${averageMilkPerDay.toStringAsFixed(2)} L'))),
-                      Expanded(child: Center(child: Text('${totalFirstTime.toStringAsFixed(2)} L'))),
-                      Expanded(child: Center(child: Text('${totalSecondTime.toStringAsFixed(2)} L'))),
-                      Expanded(child: Center(child: Text('${totalThirdTime.toStringAsFixed(2)} L'))),
-                      Expanded(child: Center(child: Text('${totalMilk.toStringAsFixed(2)} L'))),
-                    ],
+                        Expanded(child: Center(child: Text('Avg. ${averageMilkPerDay.toStringAsFixed(2)} L'))),
+                        Expanded(child: Center(child: Text('${totalFirstTime.toStringAsFixed(2)} L'))),
+                        Expanded(child: Center(child: Text('${totalSecondTime.toStringAsFixed(2)} L'))),
+                        Expanded(child: Center(child: Text('${totalThirdTime.toStringAsFixed(2)} L'))),
+                        Expanded(child: Center(child: Text('${totalMilk.toStringAsFixed(2)} L'))),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
 
           },

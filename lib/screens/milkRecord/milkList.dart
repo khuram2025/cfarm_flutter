@@ -7,8 +7,7 @@ import '../main/components/side_menu.dart';
 import '../dashboard/components/header.dart';
 import '../../constants.dart';
 import '../../responsive.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
-
+import 'package:flutter/scheduler.dart';
 
 class MilkingRecordScreen extends StatefulWidget {
   @override
@@ -18,9 +17,34 @@ class MilkingRecordScreen extends StatefulWidget {
 class _MilkingRecordScreenState extends State<MilkingRecordScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String selectedFilter = 'this_year'; // Default filter
+  Widget? sidePanelContent;
+  final _formKey = GlobalKey<FormState>();
+  DateTime selectedDate = DateTime.now();
+  List<Animal> animals = [];
+  Animal? selectedAnimal;
+  TextEditingController _firstTimeController = TextEditingController();
+  TextEditingController _secondTimeController = TextEditingController();
+  TextEditingController _thirdTimeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAnimals();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        sidePanelContent = _buildAddMilkForm(context);
+      });
+    });
+  }
+
+  Future<void> _fetchAnimals() async {
+    animals = await ApiService().fetchMilkAnimals();
+    setState(() {}); // Update state after fetching animals
+  }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: SideMenu(),
@@ -30,8 +54,7 @@ class _MilkingRecordScreenState extends State<MilkingRecordScreen> {
           children: [
             if (Responsive.isDesktop(context)) Expanded(child: SideMenu()),
             Expanded(
-              flex: 5,
-
+              flex: 4,
               child: SingleChildScrollView(
                 primary: false,
                 padding: EdgeInsets.all(defaultPadding),
@@ -74,7 +97,7 @@ class _MilkingRecordScreenState extends State<MilkingRecordScreen> {
                         ),
                       ],
                     ),
-                    MilkingTable(animalId: 1, filter: selectedFilter), // Pass the selected filter to MilkingTable
+                    MilkingTable(animalId: 1, filter: selectedFilter),
                   ],
                 ),
               ),
@@ -82,7 +105,7 @@ class _MilkingRecordScreenState extends State<MilkingRecordScreen> {
             if (!Responsive.isMobile(context))
               Expanded(
                 flex: 2,
-                child: Text("Milk Record Detail"),
+                child: sidePanelContent!,
               ),
           ],
         ),
@@ -90,143 +113,197 @@ class _MilkingRecordScreenState extends State<MilkingRecordScreen> {
     );
   }
 
-
-
-  void _showAddMilkForm(BuildContext context) async  {
-    final _formKey = GlobalKey<FormState>();
-    DateTime selectedDate = DateTime.now();
-    List<Animal> animals = await ApiService().fetchMilkAnimals(); // Fetch animals
-    Animal? selectedAnimal;
-    TextEditingController _firstTimeController = TextEditingController();
-    TextEditingController _secondTimeController = TextEditingController();
-    TextEditingController _thirdTimeController = TextEditingController();
-
-    // Function to display date picker
-    Future<void> _selectDate(BuildContext context) async {
-      final DateTime? pickedDate = await showDatePicker(
+  void _showAddMilkForm(BuildContext context) async {
+    if (Responsive.isDesktop(context)) {
+      setState(() {
+        sidePanelContent = _buildAddMilkForm(context);
+      });
+    } else {
+      showDialog(
         context: context,
-        initialDate: selectedDate, // Refer to the initial date
-        firstDate: DateTime(2000), // Lower bound for the date picker
-        lastDate: DateTime.now(), // Upper bound is today
-      );
-      if (pickedDate != null && pickedDate != selectedDate) {
-        setState(() {
-          selectedDate = pickedDate;
-        });
-      }
-    }
+        builder: (BuildContext context) => AlertDialog(
+          content: _buildAddMilkForm(context),
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Add Milk Record'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  // Date picker field
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
-                      TextButton(
-                        onPressed: () => _selectDate(context),
-                        child: Text('Choose Date'),
-                      ),
-                    ],
+        ),
+      );
+    }
+  }
+
+
+
+  Widget _buildAddMilkForm(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        child: Padding( // Add padding for better visual spacing
+          padding: const EdgeInsets.all(defaultPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start, // Align labels to the start
+            children: <Widget>[
+              Text(
+                "Add Milk Record",
+                style: Theme.of(context).textTheme.subtitle1, // Style the label
+              ),
+              SizedBox(height: defaultPadding / 2), // Add spacing between label and picker
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      "${DateFormat('yyyy-MM-dd').format(selectedDate)}",
+                      style: Theme.of(context).textTheme.bodyText1,
+                    ),
                   ),
-                  TextFormField(
-                    controller: _firstTimeController,
-                    decoration: InputDecoration(labelText: '1st Time Milk (L)'),
-                    keyboardType: TextInputType.number,
+                  ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    child: Text('Choose Date'),
                   ),
-                  TextFormField(
-                    controller: _secondTimeController,
-                    decoration: InputDecoration(labelText: '2nd Time Milk (L)'),
-                    keyboardType: TextInputType.number,
-                  ),
-                  TextFormField(
-                    controller: _thirdTimeController,
-                    decoration: InputDecoration(labelText: '3rd Time Milk (L)'),
-                    keyboardType: TextInputType.number,
-                  ),
-                  DropdownButtonFormField<Animal>(
-                    value: selectedAnimal,
-                    onChanged: (Animal? newValue) {
-                      selectedAnimal = newValue;
-                    },
-                    items: animals.map<DropdownMenuItem<Animal>>((Animal animal) {
-                      return DropdownMenuItem<Animal>(
-                        value: animal,
-                        child: Text(animal.tag), // Updated to use tag instead of id
-                      );
-                    }).toList(),
-                    decoration: InputDecoration(labelText: 'Animal'),
-                  ),
-                  // Add more fields if necessary
                 ],
               ),
-            ),
+              SizedBox(height: defaultPadding), // Add spacing between sections
+
+              // Milk time TextFields
+
+              SizedBox(height: defaultPadding / 2),
+              TextFormField(
+                controller: _firstTimeController,
+                decoration: InputDecoration(labelText: '1st Time'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: defaultPadding / 2),
+              TextFormField(
+                controller: _secondTimeController,
+                decoration: InputDecoration(labelText: '2nd Time'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: defaultPadding / 2),
+              TextFormField(
+                controller: _thirdTimeController,
+                decoration: InputDecoration(labelText: '3rd Time'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: defaultPadding),
+
+              // Animal Dropdown
+              Text(
+                "Animal",
+                style: Theme.of(context).textTheme.subtitle1,
+              ),
+              SizedBox(height: defaultPadding / 2),
+              DropdownButtonFormField<Animal>(
+                value: selectedAnimal,
+                onChanged: (Animal? newValue) {
+                  setState(() {
+                    selectedAnimal = newValue;
+                  });
+                },
+                items: animals.map<DropdownMenuItem<Animal>>((Animal animal) {
+                  return DropdownMenuItem<Animal>(
+                    value: animal,
+                    child: Text(animal.tag),
+                  );
+                }).toList(),
+                decoration: InputDecoration(labelText: 'Select Animal'),
+              ),
+              SizedBox(height: defaultPadding),
+
+              // Save and Cancel buttons
+              Padding(
+                padding: const EdgeInsets.only(top: defaultPadding),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end, // Align buttons to the end
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        // Clear/reset the form and update the state
+                        _formKey.currentState?.reset(); // Reset the form
+                        _firstTimeController.clear();
+                        _secondTimeController.clear();
+                        _thirdTimeController.clear();
+                        selectedAnimal = null; // Clear selected animal
+                        selectedDate = DateTime.now(); // Reset date
+                        setState(() {}); // Update the UI
+
+                        if (Responsive.isMobile(context)) {
+                          Navigator.of(context).pop(); // Close dialog on mobile
+                        }
+                      },
+                      child: Text('Cancel'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.grey, // Use a different color for Cancel
+                      ),
+                    ),
+                    SizedBox(width: defaultPadding / 2),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          if (selectedAnimal != null) {
+                            try {
+                              bool success = await ApiService().createOrUpdateMilkRecord(
+                                date: selectedDate,
+                                animalId: selectedAnimal!.id,
+                                firstTime: double.tryParse(_firstTimeController.text),
+                                secondTime: double.tryParse(_secondTimeController.text),
+                                thirdTime: double.tryParse(_thirdTimeController.text),
+                              );
+
+                              if (success) {
+                                // Show success message or navigate back
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Milk record saved successfully")),
+                                );
+                                Navigator.of(context).pop(); // Close dialog if in mobile mode
+                                // You might also want to refresh the milk record list here
+                              } else {
+                                // Show error message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Failed to save milk record")),
+                                );
+                              }
+                            } catch (e) {
+                              // Handle errors
+                              print(e);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("An error occurred while saving")),
+                              );
+                            }
+                          } else {
+                            // Handle case where no animal is selected
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Please select an animal")),
+                            );
+                          }
+                        }
+                      },
+                      child: Text('Save'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.green,
+                        onPrimary: Colors.white, // Style matching "Add Milk" button
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            // Inside _showAddMilkForm, for the 'Save' button onPressed callback
-            TextButton(
-              child: Text('Save'),
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  if (selectedAnimal != null) { // Ensure selectedAnimal is not null
-                    try {
-                      // Make the API call and wait for the result
-                      bool success = await ApiService().createOrUpdateMilkRecord(
-                        date: selectedDate,
-                        animalId: selectedAnimal!.id, // Use the selectedAnimal's ID safely
-                        firstTime: double.tryParse(_firstTimeController.text),
-                        secondTime: double.tryParse(_secondTimeController.text),
-                        thirdTime: double.tryParse(_thirdTimeController.text),
-                      );
-
-                      if (success) {
-                        // Handle success, e.g., show a success message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Milk record created/updated successfully")),
-                        );
-                        Navigator.of(context).pop(); // Close the dialog
-                        // Optionally, refresh the list or perform other actions upon success
-                      } else {
-                        // Handle failure, e.g., show an error message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Failed to create/update milk record")),
-                        );
-                      }
-                    } catch (e) {
-                      // Handle any errors that occur during the API call
-                      print(e); // For debugging
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("An error occurred while saving the milk record")),
-                      );
-                    }
-                  } else {
-                    // Handle case where no animal is selected
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Please select an animal")),
-                    );
-                  }
-                }
-              },
-            ),
-
-
-          ],
-        );
-      },
+        ),
+      ),
     );
   }
 
 
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (pickedDate != null && pickedDate != selectedDate) {
+      setState(() {
+        selectedDate = pickedDate;
+      });
+    }
+  }
 }
